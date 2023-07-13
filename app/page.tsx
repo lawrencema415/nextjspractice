@@ -1,5 +1,11 @@
 import Image from 'next/image'
 
+// Data Fetching
+
+// 1. Server Side Rendering (SSR) // cache: false
+// 2. Static Site Generation (SSG) // cache the fetched data
+// 3. Incremental Static Generation (ISR) // next: { revalidate: 10 } // data is cached but will refresh such as polling  
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
