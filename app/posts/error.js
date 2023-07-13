@@ -1,1 +1,0 @@
-// shows when error happens such as something went wrong page
