@@ -1,7 +1,36 @@
-import React from 'react';
+'use client';
 
-const Profile = () => {
-	return <div>Profile</div>;
+import Profile from '@components/Profile';
+import {useEffect, useState} from 'react';
+import {useSession} from 'next-auth/react';
+
+const MyProfile = () => {
+	const {data: session} = useSession();
+	const [posts, setPosts] = useState('');
+
+	useEffect(() => {
+		const fetchPosts = async () => {
+			const response = await fetch(`/api/users/${session?.user.id}/posts`);
+			const data = await response.json();
+
+			setAllPosts(data);
+		};
+		if (session?.user.id) fetchPosts();
+	}, []);
+
+	const handleEdit = () => {};
+
+	const handleDelete = async () => {};
+
+	return (
+		<Profile
+			name='My'
+			desc='Welcome to profile page'
+			data={[]}
+			handleDelete={handleDelete}
+			handleEdit={handleEdit}
+		/>
+	);
 };
 
-export default Profile;
+export default MyProfile;
