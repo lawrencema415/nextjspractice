@@ -1,34 +1,54 @@
-"use client";
+import Prompt from "@models/prompt";
+import { connectToDB } from "@utils/database";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+export const GET = async (request, { params }) => {
+    try {
+        await connectToDB()
 
-import Profile from "@components/Profile";
+        const prompt = await Prompt.findById(params.id).populate("creator")
+        if (!prompt) return new Response("Prompt Not Found", { status: 404 });
 
-const UserProfile = ({ params }) => {
-  const searchParams = useSearchParams();
-  const userName = searchParams.get("name");
+        return new Response(JSON.stringify(prompt), { status: 200 })
 
-  const [userPosts, setUserPosts] = useState([]);
+    } catch (error) {
+        return new Response("Internal Server Error", { status: 500 });
+    }
+}
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const response = await fetch(`/api/users/${params?.id}/posts`);
-      const data = await response.json();
+export const PATCH = async (request, { params }) => {
+    const { prompt, tag } = await request.json();
 
-      setUserPosts(data);
-    };
+    try {
+        await connectToDB();
 
-    if (params?.id) fetchPosts();
-  }, [params.id]);
+        // Find the existing prompt by ID
+        const existingPrompt = await Prompt.findById(params.id);
 
-  return (
-    <Profile
-      name={userName}
-      desc={`Welcome to ${userName}'s personalized profile page. Explore ${userName}'s exceptional prompts and be inspired by the power of their imagination`}
-      data={userPosts}
-    />
-  );
+        if (!existingPrompt) {
+            return new Response("Prompt not found", { status: 404 });
+        }
+
+        // Update the prompt with new data
+        existingPrompt.prompt = prompt;
+        existingPrompt.tag = tag;
+
+        await existingPrompt.save();
+
+        return new Response("Successfully updated the Prompts", { status: 200 });
+    } catch (error) {
+        return new Response("Error Updating Prompt", { status: 500 });
+    }
 };
 
-export default UserProfile;
+export const DELETE = async (request, { params }) => {
+    try {
+        await connectToDB();
+
+        // Find the prompt by ID and remove it
+        await Prompt.findByIdAndRemove(params.id);
+
+        return new Response("Prompt deleted successfully", { status: 200 });
+    } catch (error) {
+        return new Response("Error deleting prompt", { status: 500 });
+    }
+};
